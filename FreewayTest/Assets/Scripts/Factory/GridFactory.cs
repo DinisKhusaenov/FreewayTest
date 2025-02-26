@@ -18,6 +18,9 @@ namespace Factory
         public Cell[,] Get(Transform cellParent)
         {
             Cell[,] cells = new Cell[_config.XGridSize, _config.YGridSize];
+            
+            float halfWidth = (_config.XGridSize - 1) / 2f;
+            float halfHeight = (_config.YGridSize - 1) / 2f;
 
             for (int y = 0; y < _config.YGridSize; y++)
             {
@@ -25,8 +28,8 @@ namespace Factory
                 {
                     var cell = _cellFactory.Get(cellParent);
 
-                    float posX = (x - _config.XGridSize / 2f) * (cell.XSize + _config.SpaceBetweenCells);
-                    float posY = (-y + _config.YGridSize / 2f) * (cell.YSize + _config.SpaceBetweenCells);
+                    float posX = (x - halfWidth) * (cell.XSize + _config.SpaceBetweenCells);
+                    float posY = (-y + halfHeight) * (cell.YSize + _config.SpaceBetweenCells);
 
                     cell.RectTransform.anchoredPosition = new Vector2(posX, posY);
 

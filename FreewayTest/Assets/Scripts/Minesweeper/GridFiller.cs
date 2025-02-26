@@ -16,15 +16,18 @@ namespace Minesweeper
         public void Fill(Cell[,] cells, int x, int y)
         {
             _cells = cells;
-            
+
             FillWithBombs(x, y);
             FillEmpty();
             FillWithNumbers();
         }
 
-        public void OpenEmptyCells(int x, int y)
+        public void OpenEmptyCells(int x, int y, ref int openedCells)
         {
             _cells[x, y].Open();
+            
+            if (!_cells[x, y].IsBomb)
+                openedCells++;
 
             if (!_cells[x, y].IsEmpty)
                 return;
@@ -41,8 +44,8 @@ namespace Minesweeper
                     {
                         if (i == x && j == y) continue;
                         
-                        if (!_cells[i, j].IsOpened)
-                            OpenEmptyCells(i, j);
+                        if (!_cells[i, j].IsOpened && !_cells[i, j].IsFlagActive)
+                            OpenEmptyCells(i, j, ref openedCells);
                     }
                 }
             }

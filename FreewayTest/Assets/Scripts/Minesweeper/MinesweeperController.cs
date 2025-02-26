@@ -2,25 +2,33 @@ using System;
 using Configs;
 using Factory;
 using Input;
+using UI;
 using UnityEngine;
 
 namespace Minesweeper
 {
     public class MinesweeperController : IDisposable
     {
+        private readonly MinesweeperConfig _config;
+        private readonly IInputService _inputService;
+        
+        private CompletionPanelFactory _panelFactory;
         private CellFactory _cellFactory;
         private GridFactory _gridFactory;
         private GridFiller _gridFiller;
+        
         private Cell[,] _cells;
         private bool _isFirstClick = true;
+        private int _openedCells;
+        private CompletionPanel _completionPanel;
 
-        private MinesweeperConfig _config;
-        private IInputService _inputService;
-
-        public MinesweeperController(Cell prefab, Transform cellsParent, MinesweeperConfig config, IInputService inputService)
+        public MinesweeperController(Cell prefab, Transform cellsParent, MinesweeperConfig config, 
+            IInputService inputService, CompletionPanelFactory panelFactory)
         {
             _config = config;
             _inputService = inputService;
+            _panelFactory = panelFactory;
+            
             _inputService.OnRestarted += Reset;
             
             _cellFactory = new CellFactory(prefab);
@@ -34,7 +42,7 @@ namespace Minesweeper
                 {
                     var x1 = x;
                     var y1 = y;
-                    _cells[x, y].OnLeftCLicked += (value) => OnCellLeftClicked(value, x1, y1);
+                    _cells[x, y].OnOpenCLicked += (value) => OnCellOpenClicked(value, x1, y1);
                 }
             }
         }
@@ -44,7 +52,7 @@ namespace Minesweeper
             _inputService.OnRestarted -= Reset;
         }
 
-        private void OnCellLeftClicked(Cell cell, int x, int y)
+        private void OnCellOpenClicked(Cell cell, int x, int y)
         {
             cell.Open();
 
@@ -56,12 +64,20 @@ namespace Minesweeper
 
             if (cell.IsBomb)
             {
-                Debug.Log("GameOver");
+                Lose();
+                return;
             }
-            else if (cell.IsEmpty)
+
+            if (cell.IsEmpty)
             {
-                _gridFiller.OpenEmptyCells(x, y);
+                _gridFiller.OpenEmptyCells(x, y, ref _openedCells);
             }
+            else
+            {
+                _openedCells++;
+            }
+
+            CheckOnWin();
         }
 
         private void Reset()
@@ -74,7 +90,41 @@ namespace Minesweeper
                 }
             }
 
-            _isFirstClick = false;
+            _openedCells = 0;
+            _isFirstClick = true;
+            if (_completionPanel != null)
+            {
+                _completionPanel.Hide();
+                _completionPanel.OnRestartClicked -= Reset;
+            }
+        }
+
+        private void CheckOnWin()
+        {
+            if (_openedCells >= _config.CellsCount - _config.BombsCount)
+            {
+                CreateCompletionPanel();
+            }
+        }
+
+        private void Lose()
+        {
+            if (_completionPanel != null)
+            {
+                _completionPanel.Show();
+                _completionPanel.OnRestartClicked += Reset;
+            }
+            else
+            {
+                CreateCompletionPanel();
+            }
+        }
+
+        private void CreateCompletionPanel()
+        {
+            _completionPanel = _panelFactory.Get();
+            _completionPanel.Show();
+            _completionPanel.OnRestartClicked += Reset;
         }
     }
 }

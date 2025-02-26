@@ -155,6 +155,8 @@ MonoBehaviour:
   _config: {fileID: 11400000, guid: b38420aec3932a449837206b31642054, type: 2}
   _cellPrefab: {fileID: 2259716045881755788, guid: ce8ccfd5a3530b043a06fa52e520f430, type: 3}
   _cellsParent: {fileID: 1753080685}
+  _completionPanel: {fileID: 4518461978257100987, guid: fe125b2718806764391465a707ac8193, type: 3}
+  _canvas: {fileID: 1649698439}
 --- !u!4 &189971365
 Transform:
   m_ObjectHideFlags: 0
@@ -463,10 +465,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1649698440}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &2071911015
 GameObject:
