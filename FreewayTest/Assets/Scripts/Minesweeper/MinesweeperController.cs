@@ -26,11 +26,20 @@ namespace Minesweeper
             IInputService inputService, CompletionPanelFactory panelFactory)
         {
             _config = config;
-            _inputService = inputService;
             _panelFactory = panelFactory;
-            
+            _inputService = inputService;
             _inputService.OnRestarted += Reset;
             
+            CreateGrid(prefab, cellsParent);
+        }
+        
+        public void Dispose()
+        {
+            _inputService.OnRestarted -= Reset;
+        }
+
+        private void CreateGrid(Cell prefab, Transform cellsParent)
+        {
             _cellFactory = new CellFactory(prefab);
             _gridFactory = new GridFactory(_cellFactory, _config);
             _gridFiller = new GridFiller(_config);
@@ -45,11 +54,6 @@ namespace Minesweeper
                     _cells[x, y].OnOpenCLicked += (value) => OnCellOpenClicked(value, x1, y1);
                 }
             }
-        }
-        
-        public void Dispose()
-        {
-            _inputService.OnRestarted -= Reset;
         }
 
         private void OnCellOpenClicked(Cell cell, int x, int y)
