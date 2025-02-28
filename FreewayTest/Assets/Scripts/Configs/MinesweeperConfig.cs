@@ -14,9 +14,9 @@ namespace Configs
 
         private void OnValidate()
         {
-            if (BombsCount > CellsCount)
+            if (BombsCount > CellsCount - 1)
             {
-                BombsCount = CellsCount;
+                BombsCount = CellsCount - 1;
             }
         }
     }

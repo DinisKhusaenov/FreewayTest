@@ -27,11 +27,12 @@ namespace Factory
                 for (int x = 0; x < _config.XGridSize; x++)
                 {
                     var cell = _cellFactory.Get(cellParent);
+                    cell.Initialize(x, y);
 
                     float posX = (x - halfWidth) * (cell.XSize + _config.SpaceBetweenCells);
                     float posY = (-y + halfHeight) * (cell.YSize + _config.SpaceBetweenCells);
 
-                    cell.RectTransform.anchoredPosition = new Vector2(posX, posY);
+                    cell.transform.position = new Vector2(posX, posY);
 
                     cells[x, y] = cell;
                 }

@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using Configs;
 using UnityEngine;
 
@@ -7,17 +9,21 @@ namespace Minesweeper
     {
         private MinesweeperConfig _config;
         private Cell[,] _cells;
+        private List<Cell> _uninitializedCells = new();
 
         public GridFiller(MinesweeperConfig config)
         {
             _config = config;
         }
 
-        public void Fill(Cell[,] cells, int x, int y)
+        public void Fill(Cell[,] cells, Cell cell)
         {
             _cells = cells;
+            _uninitializedCells = cells.Cast<Cell>().ToList();
+            _uninitializedCells.Remove(cell);
 
-            FillWithBombs(x, y);
+            FillWithBombs();
+            _uninitializedCells.Add(cell);
             FillEmpty();
             FillWithNumbers();
         }
@@ -51,21 +57,13 @@ namespace Minesweeper
             }
         }
         
-        private void FillWithBombs(int x, int y)
+        private void FillWithBombs()
         {
             for (int i = 0; i < _config.BombsCount; i++)
             {
-                while (true)
-                {
-                    var randomX = Random.Range(0, _config.XGridSize);
-                    var randomY = Random.Range(0, _config.YGridSize);
-
-                    if (!_cells[randomX, randomY].IsBomb && (randomX != x && randomY != y))
-                    {
-                        _cells[randomX, randomY].Initialize(true);
-                        break;
-                    }
-                }
+                var randomCellId = Random.Range(0, _uninitializedCells.Count);
+                _uninitializedCells[randomCellId].Set(true);
+                _uninitializedCells.RemoveAt(randomCellId);
             }
         }
 
@@ -75,31 +73,17 @@ namespace Minesweeper
             
             for (int i = 0; i < emptyCount; i++)
             {
-                while (true)
-                {
-                    var randomX = Random.Range(0, _config.XGridSize);
-                    var randomY = Random.Range(0, _config.YGridSize);
-
-                    if (!_cells[randomX, randomY].IsBomb)
-                    {
-                        _cells[randomX, randomY].Initialize(false);
-                        break;
-                    }
-                }
+                var randomCellId = Random.Range(0, _uninitializedCells.Count);
+                _uninitializedCells[randomCellId].Set(false);
+                _uninitializedCells.RemoveAt(randomCellId);
             }
         }
 
         private void FillWithNumbers()
         {
-            for (int y = 0; y < _config.YGridSize; y++)
+            foreach (var cell in _uninitializedCells)
             {
-                for (int x = 0; x < _config.XGridSize; x++)
-                {
-                    if (!_cells[x, y].IsBomb && !_cells[x, y].IsEmpty)
-                    {
-                        FillCellWithNumber(x, y);
-                    }
-                }
+                FillCellWithNumber((int)cell.GridPosition.x, (int)cell.GridPosition.y);
             }
         }
 
@@ -124,8 +108,15 @@ namespace Minesweeper
                     }
                 }
             }
-            
-            _cells[x, y].Initialize(false, counter);
+
+            if (counter > 0)
+            {
+                _cells[x, y].Set(false, counter);
+            }
+            else
+            {
+                _cells[x, y].Set(false);
+            }
         }
     }
 }

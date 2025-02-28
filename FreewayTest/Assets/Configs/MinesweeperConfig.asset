@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <XGridSize>k__BackingField: 10
   <YGridSize>k__BackingField: 10
-  <SpaceBetweenCells>k__BackingField: 5
+  <SpaceBetweenCells>k__BackingField: 0.1
   <BombsCount>k__BackingField: 30

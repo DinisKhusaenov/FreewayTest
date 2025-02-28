@@ -1,36 +1,32 @@
-using System;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 namespace Minesweeper
 {
-    public class Cell : MonoBehaviour , IPointerClickHandler
+    public class Cell : MonoBehaviour
     {
-        public event Action<Cell> OnOpenCLicked;
-        public event Action<Cell, bool> OnFlagCLicked;
-        
-        [SerializeField] private Image _block;
-        [SerializeField] private Image _bomb;
-        [SerializeField] private Image _flag;
+        [SerializeField] private SpriteRenderer _block;
+        [SerializeField] private SpriteRenderer _bomb;
+        [SerializeField] private SpriteRenderer _flag;
         [SerializeField] private TMP_Text _number;
+        [SerializeField] private LayerMask _layer;
 
-        public RectTransform RectTransform { get; private set; }
         public bool IsBomb { get; private set; }
         public bool IsEmpty { get; private set; }
         public bool IsOpened { get; private set; }
         public bool IsFlagActive { get; private set; }
+        public Vector2 GridPosition { get; private set; }
+        public LayerMask Layer => _layer;
 
-        public float XSize => RectTransform.sizeDelta.x;
-        public float YSize => RectTransform.sizeDelta.y;
+        public float XSize => transform.localScale.x;
+        public float YSize => transform.localScale.y;
 
-        private void Awake()
+        public void Initialize(int x, int y)
         {
-            RectTransform = GetComponent<RectTransform>();
+            GridPosition = new Vector2(x, y);
         }
 
-        public void Initialize(bool isBomb, int number = -1)
+        public void Set(bool isBomb, int number = -1)
         {
             if (isBomb)
             {
@@ -69,22 +65,7 @@ namespace Minesweeper
             IsFlagActive = false;
         }
 
-        public void OnPointerClick(PointerEventData eventData)
-        {
-            if (IsOpened) return;
-
-            if (eventData.button == PointerEventData.InputButton.Right)
-            {
-                Block();
-                OnFlagCLicked?.Invoke(this, IsFlagActive);
-            }
-            else if (eventData.button == PointerEventData.InputButton.Left && !IsFlagActive)
-            {
-                OnOpenCLicked?.Invoke(this);
-            }
-        }
-
-        private void Block()
+        public void Block()
         {
             IsFlagActive = !IsFlagActive;
 

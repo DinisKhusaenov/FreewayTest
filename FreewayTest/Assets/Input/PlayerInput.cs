@@ -35,6 +35,24 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Open"",
+                    ""type"": ""Button"",
+                    ""id"": ""adc19fd8-ba35-4052-97ec-1a3f577dc437"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Flag"",
+                    ""type"": ""Button"",
+                    ""id"": ""11757495-d342-4266-b291-f5773f9daea1"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -48,6 +66,28 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""action"": ""Restart"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""9a0361ae-3da5-4c50-b140-1ed36dd15f00"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Open"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""cd0ba4de-61b5-4b84-a785-bc2e90c14361"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Flag"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -57,6 +97,8 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         // PlayerActions
         m_PlayerActions = asset.FindActionMap("PlayerActions", throwIfNotFound: true);
         m_PlayerActions_Restart = m_PlayerActions.FindAction("Restart", throwIfNotFound: true);
+        m_PlayerActions_Open = m_PlayerActions.FindAction("Open", throwIfNotFound: true);
+        m_PlayerActions_Flag = m_PlayerActions.FindAction("Flag", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -119,11 +161,15 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
     private readonly InputActionMap m_PlayerActions;
     private List<IPlayerActionsActions> m_PlayerActionsActionsCallbackInterfaces = new List<IPlayerActionsActions>();
     private readonly InputAction m_PlayerActions_Restart;
+    private readonly InputAction m_PlayerActions_Open;
+    private readonly InputAction m_PlayerActions_Flag;
     public struct PlayerActionsActions
     {
         private @PlayerInput m_Wrapper;
         public PlayerActionsActions(@PlayerInput wrapper) { m_Wrapper = wrapper; }
         public InputAction @Restart => m_Wrapper.m_PlayerActions_Restart;
+        public InputAction @Open => m_Wrapper.m_PlayerActions_Open;
+        public InputAction @Flag => m_Wrapper.m_PlayerActions_Flag;
         public InputActionMap Get() { return m_Wrapper.m_PlayerActions; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -136,6 +182,12 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             @Restart.started += instance.OnRestart;
             @Restart.performed += instance.OnRestart;
             @Restart.canceled += instance.OnRestart;
+            @Open.started += instance.OnOpen;
+            @Open.performed += instance.OnOpen;
+            @Open.canceled += instance.OnOpen;
+            @Flag.started += instance.OnFlag;
+            @Flag.performed += instance.OnFlag;
+            @Flag.canceled += instance.OnFlag;
         }
 
         private void UnregisterCallbacks(IPlayerActionsActions instance)
@@ -143,6 +195,12 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             @Restart.started -= instance.OnRestart;
             @Restart.performed -= instance.OnRestart;
             @Restart.canceled -= instance.OnRestart;
+            @Open.started -= instance.OnOpen;
+            @Open.performed -= instance.OnOpen;
+            @Open.canceled -= instance.OnOpen;
+            @Flag.started -= instance.OnFlag;
+            @Flag.performed -= instance.OnFlag;
+            @Flag.canceled -= instance.OnFlag;
         }
 
         public void RemoveCallbacks(IPlayerActionsActions instance)
@@ -163,5 +221,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
     public interface IPlayerActionsActions
     {
         void OnRestart(InputAction.CallbackContext context);
+        void OnOpen(InputAction.CallbackContext context);
+        void OnFlag(InputAction.CallbackContext context);
     }
 }

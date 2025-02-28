@@ -4,6 +4,7 @@ using Factory;
 using Input;
 using UI;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace Minesweeper
 {
@@ -11,6 +12,7 @@ namespace Minesweeper
     {
         private readonly MinesweeperConfig _config;
         private readonly IInputService _inputService;
+        private readonly Camera _camera;
         
         private CompletionPanelFactory _panelFactory;
         private CellFactory _cellFactory;
@@ -18,6 +20,7 @@ namespace Minesweeper
         private GridFiller _gridFiller;
         
         private Cell[,] _cells;
+        private LayerMask _cellLayer;
         private bool _isFirstClick = true;
         private int _openedCells;
         private CompletionPanel _completionPanel;
@@ -28,7 +31,12 @@ namespace Minesweeper
             _config = config;
             _panelFactory = panelFactory;
             _inputService = inputService;
+            _cellLayer = prefab.Layer;
+            _camera = Camera.main;
+            
             _inputService.OnRestarted += Reset;
+            _inputService.OnOpenClicked += OnOpenClicked;
+            _inputService.OnFlagClicked += OnFlagClicked;
             
             CreateGrid(prefab, cellsParent);
         }
@@ -36,6 +44,8 @@ namespace Minesweeper
         public void Dispose()
         {
             _inputService.OnRestarted -= Reset;
+            _inputService.OnOpenClicked -= OnOpenClicked;
+            _inputService.OnFlagClicked -= OnFlagClicked;
         }
 
         private void CreateGrid(Cell prefab, Transform cellsParent)
@@ -44,25 +54,50 @@ namespace Minesweeper
             _gridFactory = new GridFactory(_cellFactory, _config);
             _gridFiller = new GridFiller(_config);
             _cells = _gridFactory.Get(cellsParent);
-            
-            for (int y = 0; y < _config.YGridSize; y++)
+        }
+
+        private void OnOpenClicked()
+        {
+            var cell = CheckOnHit();
+
+            if (cell != null)
             {
-                for (int x = 0; x < _config.XGridSize; x++)
-                {
-                    var x1 = x;
-                    var y1 = y;
-                    _cells[x, y].OnOpenCLicked += (value) => OnCellOpenClicked(value, x1, y1);
-                }
+                OpenCell(cell);
+            }
+        }
+        
+        private void OnFlagClicked()
+        {
+            var cell = CheckOnHit();
+            
+            if (cell != null)
+            {
+                BlockCell(cell);
             }
         }
 
-        private void OnCellOpenClicked(Cell cell, int x, int y)
+        private Cell CheckOnHit()
         {
+            if (EventSystem.current.IsPointerOverGameObject())
+            {
+                return null;
+            }
+            
+            Vector2 mousePosition = _camera.ScreenToWorldPoint(UnityEngine.Input.mousePosition);
+            RaycastHit2D hit = Physics2D.Raycast(mousePosition, Vector2.zero, 0, _cellLayer);
+
+            return hit.collider != null ? hit.collider.GetComponent<Cell>() : null;
+        }
+
+        private void OpenCell(Cell cell)
+        {
+            if (cell.IsOpened || cell.IsFlagActive) return;
+            
             cell.Open();
 
             if (_isFirstClick)
             {
-                _gridFiller.Fill(_cells, x, y);
+                _gridFiller.Fill(_cells, cell);
                 _isFirstClick = false;
             }
 
@@ -74,7 +109,7 @@ namespace Minesweeper
 
             if (cell.IsEmpty)
             {
-                _gridFiller.OpenEmptyCells(x, y, ref _openedCells);
+                _gridFiller.OpenEmptyCells((int)cell.GridPosition.x, (int)cell.GridPosition.y , ref _openedCells);
             }
             else
             {
@@ -82,6 +117,14 @@ namespace Minesweeper
             }
 
             CheckOnWin();
+        }
+
+        private void BlockCell(Cell cell)
+        {
+            if (!cell.IsOpened)
+            {
+                cell.Block();
+            }
         }
 
         private void Reset()
